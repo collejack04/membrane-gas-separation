@@ -141,6 +141,12 @@ function update() {
   $("outArea").textContent = res.area.toLocaleString(undefined, { maximumFractionDigits: 0 }) + " m²";
   $("outPermeance").textContent = res.permeanceGPU.toLocaleString(undefined, { maximumFractionDigits: 0 }) + " GPU";
   $("outFlux").textContent = (res.jTot * 1000).toFixed(2) + " mmol/m²·s";
+  const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
+  set("cardPurity", fmtPct(res.y));
+  set("cardRecovery", fmtPct(res.recovery));
+  set("cardArea", res.area.toLocaleString(undefined, { maximumFractionDigits: 0 }) + " m²");
+  set("cardPermeance", res.permeanceGPU.toLocaleString(undefined, { maximumFractionDigits: 0 }) + " GPU");
+  set("dimline", "α = " + p.alpha.toFixed(0) + "  ·  r = " + (1 / p.pF).toFixed(2) + "  ·  θ = " + fmtPct(p.theta) + "  ·  xF = " + fmtPct(p.xF) + "  ·  Q = " + res.permeanceGPU.toLocaleString(undefined, { maximumFractionDigits: 0 }) + " GPU  ·  pF = " + p.pF.toFixed(1) + " bar  ·  pP = 1 bar");
   $("explain").textContent =
     `At stage cut ${(p.theta * 100).toFixed(0)}%, ${fmtPct(res.recovery)} of the CO2 in the feed ends up in the permeate, ` +
     `at ${fmtPct(res.y)} purity. The retentate still holds ${fmtPct(res.x)} CO2. ` +
@@ -156,4 +162,19 @@ $("resetBtn").addEventListener("click", () => {
   $("thickUm").value = 0.1; $("pF").value = 5; $("theta").value = 50; $("feedFlow").value = 10;
   update();
 });
+// Tabs, chetools style: App / Theory / Python / AI Project
+function showTab(name) {
+  document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === name));
+  document.querySelectorAll(".tabpanel").forEach(p => p.classList.toggle("active", p.id === "panel-" + name));
+  const sidebar = $("sidebar");
+  if (sidebar) sidebar.style.display = name === "app" ? "" : "none";
+  if (name === "app") { const c = $("chart"); if (c) drawChart(tradeoff(readParams()), evaluate(readParams())); }
+}
+document.querySelectorAll(".tab").forEach(b => b.addEventListener("click", () => showTab(b.dataset.tab)));
+// Python sub-tabs
+function showPySub(name) {
+  document.querySelectorAll(".subtab").forEach(b => b.classList.toggle("active", b.dataset.sub === name));
+  document.querySelectorAll(".pysub").forEach(p => p.classList.toggle("active", p.id === "py-" + name));
+}
+document.querySelectorAll(".subtab").forEach(b => b.addEventListener("click", () => showPySub(b.dataset.sub)));
 update();
