@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Membrane Gas Separation — Interactive Demo</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<header>
+  <h1>Membrane Gas Separation</h1>
+  <p>Single-stage CO₂ / N₂ separation, live. Move the sliders and watch the purity vs recovery tradeoff move. An AI project exploring AI capabilities for Separations and Processes — see <a style="color:#93c5fd" href="#ai-project">About this AI project</a> below.</p>
+  <p>Repo: <a style="color:#93c5fd" href="https://github.com/collejack04/membrane-gas-separation">github.com/collejack04/membrane-gas-separation</a> · Live site: <a style="color:#93c5fd" href="https://collejack04.github.io/membrane-gas-separation/">collejack04.github.io/membrane-gas-separation</a></p>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <h2>Live demo — try it</h2>
+    <p>Default case: 15% CO₂ in N₂ (flue gas), selectivity α = 30, 100 Barrer, 0.1 µm selective layer (= 1000 GPU), 5 bar feed, 1 bar permeate, 50% stage cut, 10 mol/s feed.</p>
+    <div class="grid">
+      <div>
+        <label>Feed CO₂ fraction <span id="xFVal"></span></label>
+        <input type="range" id="xF" min="5" max="50" step="1" value="15">
+        <div class="hint">Flue gas is ~12–15% CO₂. Natural gas is higher.</div>
+
+        <label>Selectivity α = P<sub>CO₂</sub> / P<sub>N₂</sub> <span id="alphaVal"></span></label>
+        <input type="range" id="alpha" min="5" max="100" step="1" value="30">
+        <div class="hint">How much faster CO₂ goes through than N₂. Moves the curve up.</div>
+
+        <label>CO₂ permeability <span id="permVal"></span></label>
+        <input type="range" id="permBarrer" min="10" max="1000" step="10" value="100">
+        <div class="hint">Material property. Barely changes purity — it changes area.</div>
+
+        <label>Selective-layer thickness <span id="thickVal"></span></label>
+        <input type="range" id="thickUm" min="0.1" max="2" step="0.1" value="0.1">
+        <div class="hint">Permeance = permeability / thickness. Thin layer = high permeance.</div>
+      </div>
+      <div>
+        <label>Feed pressure <span id="pFVal"></span></label>
+        <input type="range" id="pF" min="2" max="20" step="0.5" value="5">
+        <div class="hint">Permeate is fixed at 1 bar. Higher feed pressure = lower pressure ratio r = p<sub>perm</sub>/p<sub>feed</sub>, better separation.</div>
+
+        <label>Stage cut θ = permeate / feed <span id="thetaVal"></span></label>
+        <input type="range" id="theta" min="5" max="90" step="1" value="50">
+        <div class="hint">The tradeoff slider. More permeate = higher recovery, lower purity.</div>
+
+        <label>Feed flow <span id="feedVal"></span></label>
+        <input type="range" id="feedFlow" min="1" max="20" step="1" value="10">
+        <div class="hint">Scales area linearly. Purity and recovery do not depend on it.</div>
+
+        <p><button id="resetBtn">Reset to default case</button></p>
+      </div>
+    </div>
+
+    <div class="outputs">
+      <div class="out"><b id="outPurity"></b><span>Permeate purity (CO₂ in permeate)</span></div>
+      <div class="out"><b id="outRecovery"></b><span>CO₂ recovery</span></div>
+      <div class="out"><b id="outRetentate"></b><span>Retentate CO₂ (left behind)</span></div>
+      <div class="out"><b id="outArea"></b><span>Membrane area required</span></div>
+      <div class="out"><b id="outPermeance"></b><span>CO₂ permeance</span></div>
+      <div class="out"><b id="outFlux"></b><span>Total flux</span></div>
+    </div>
+    <p id="explain" style="margin-top:16px"></p>
+  </div>
+
+  <div class="card">
+    <h2>Purity vs recovery tradeoff — live</h2>
+    <p>Each point on the blue curve is a different stage cut, at your current selectivity, feed composition and pressures. The red dot is where you are now. You cannot get both high purity and high recovery in one stage — that is the point.</p>
+    <canvas id="chart" width="920" height="340"></canvas>
+    <p class="hint">At low stage cut you skim off only the fastest gas, so purity is high but you recover little. At high stage cut you force almost everything through, so recovery is high but the slow gas comes with it and purity falls to near the feed composition.</p>
+  </div>
+
+  <div class="card">
+    <h2>How the math works — in 60 seconds</h2>
+    <p><b>1. Flux.</b> For each gas i: <code>J<sub>i</sub> = Q<sub>i</sub> × (p<sub>feed</sub>·x<sub>i</sub> − p<sub>perm</sub>·y<sub>i</sub>)</code>. Q is permeance, the bracket is the partial-pressure driving force. A is the fast gas.</p>
+    <p><b>2. Selectivity.</b> <code>α = Q<sub>A</sub> / Q<sub>B</sub> = P<sub>A</sub> / P<sub>B</sub></code>. Only the ratio matters for separation. Absolute Q matters for area.</p>
+    <p><b>3. Permeance vs permeability.</b> <code>Permeance [GPU] = Permeability [Barrer] / thickness [µm]</code>. Same material, thinner layer, more flux, same selectivity.</p>
+    <p><b>4. Balances.</b> Overall: <code>F = P + R</code>. On A: <code>F·x<sub>F</sub> = P·y + R·x</code>. Stage cut: <code>θ = P / F</code>. Recovery: <code>θ·y / x<sub>F</sub></code>.</p>
+    <p><b>5. The model.</b> Complete-mixing (Weller–Steiner): both sides are well mixed, so the flux ratio gives <code>y/(1−y) = α·(x − r·y) / ((1−x) − r·(1−y))</code> with <code>r = p<sub>perm</sub>/p<sub>feed</sub></code>. Substitute x from the balance and solve for y by bisection. Full derivation: <a href="docs/theory.md">docs/theory.md</a>. Python reference: <a href="src/membrane.py">src/membrane.py</a> — the JavaScript in <code>assets/app.js</code> is the same solver.</p>
+    <p><b>Why one stage is not enough.</b> Even at α = 30, 15% feed only reaches ~55% purity at very low recovery. Real plants use two stages, a recycle, or a higher α membrane. That is a good “what I want to learn next” for the presentation.</p>
+  </div>
+
+  <div class="card" id="ai-project">
+    <h2>About this AI project</h2>
+    <p>This is an AI project exploring AI capabilities, for Separations and Processes. The demo above and the Python model were built with AI assistance; the student directed the plan, checked the math against the textbook complete-mixing model, and chose what to accept or reject when a second AI model critiqued the plan.</p>
+    <p><b>Models / process (to fill in for submission):</b> Plan from Model 1, critique from Model 2, implementation compared across at least two models. Prompts, iteration notes, accept/reject justifications, and attribution will be documented here before submission.</p>
+    <p><b>Presentation video:</b> <em>[YouTube link to be added]</em></p>
+    <p><b>Verbatim YouTube auto-generated transcript:</b> <em>[to be added as a viewable section here after the presentation is recorded]</em></p>
+    <p><b>What I learned / want to learn next:</b> <em>[to be added — e.g. why selectivity alone does not set purity, the role of pressure ratio, and two-stage / recycle designs]</em></p>
+  </div>
+
+  <div class="card">
+    <h2>Run it yourself</h2>
+    <pre>git clone https://github.com/collejack04/membrane-gas-separation.git
+cd membrane-gas-separation
+python3 src/membrane.py
+# then open index.html, or serve it:
+python3 -m http.server 8000</pre>
+    <p>GitHub Pages: Settings → Pages → Deploy from branch → main, folder <code>/ (root)</code>. The site is static — no build step, no server — so it deploys as-is. A WebAssembly build is not required; this static demo satisfies the “publicly accessible website demo” requirement, and the Python model is the auditable reference.</p>
+  </div>
+</div>
+<footer class="wrap">Membrane gas separation demo — complete-mixing model. References: Seader, Henley &amp; Roper, <i>Separation Process Principles</i>; Geankoplis, <i>Transport Processes and Separation Process Principles</i>; Weller &amp; Steiner (1950). See docs/theory.md for full derivation and assumptions.</footer>
+<script src="assets/app.js"></script>
+</body>
+</html>
