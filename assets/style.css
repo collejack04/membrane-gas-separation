@@ -47,4 +47,20 @@ th,td{border:1px solid #e2e8f0;padding:8px 10px;text-align:left;font-size:14px}
 th{background:#f8fafc}
 button.primary{background:#e11d48;color:#fff;border:0;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:600}
 button.ghost{background:#fff;color:#0f172a;border:1px solid #e2e8f0;padding:9px 14px;border-radius:8px;cursor:pointer;font-weight:600}
+.hero{background:linear-gradient(135deg,#0f172a 0%,#155e75 55%,#059669 100%);color:#fff;border-radius:14px;padding:22px 24px;margin-bottom:18px}
+.hero h1{color:#fff;margin:0 0 8px}
+.hero p{color:#e2e8f0;margin:0;max-width:760px}
+.hero .kicker{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#fda4af;font-weight:700}
+.presets{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
+@media(max-width:760px){.presets{grid-template-columns:1fr}}
+.preset{border:1px solid #e2e8f0;border-radius:10px;padding:14px;cursor:pointer;background:#fff;text-align:left;font-family:inherit}
+.preset b{display:block;font-size:15px}
+.preset span{font-size:13px;color:#475569}
+.preset.active{border-color:#e11d48;box-shadow:0 0 0 2px #fda4af}
+.flow{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap;margin:14px 0}
+.flowbox{border:1px solid #e2e8f0;background:#f8fafc;border-radius:10px;padding:12px;min-width:150px;flex:1}
+.flowbox b{display:block;font-size:16px}
+.flowbox span{font-size:13px;color:#475569}
+.flowarrow{align-self:center;font-size:22px;color:#64748b}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
 footer{color:#64748b;font-size:13px;padding:0 0 32px}

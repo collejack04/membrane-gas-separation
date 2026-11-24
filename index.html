@@ -28,7 +28,11 @@
 
     <label>Feed pressure <span id="pFVal"></span></label>
     <input type="range" id="pF" min="2" max="20" step="0.5" value="5">
-    <div class="hint">Permeate fixed at 1 bar. Higher feed pressure = lower r, better separation.</div>
+    <div class="hint">Higher feed pressure = lower r, better separation.</div>
+
+    <label>Permeate pressure <span id="pPVal"></span></label>
+    <input type="range" id="pP" min="0.2" max="1" step="0.1" value="1">
+    <div class="hint">New slider — pull a vacuum (0.2 bar) and r drops, purity and recovery both rise. This is why real plants use vacuum on the permeate side.</div>
 
     <label>Stage cut θ <span id="thetaVal"></span></label>
     <input type="range" id="theta" min="5" max="90" step="1" value="50">
@@ -45,8 +49,11 @@
   </aside>
 
   <main class="main">
-    <h1>Membrane gas separation: purity vs recovery</h1>
-    <p class="intro">A single-stage CO₂ / N₂ membrane (flue-gas-like feed, 15% CO₂) modelled with the complete-mixing model and solved by bisection on the Weller–Steiner equation. The tradeoff is mapped live: how strongly purity falls as you push for more recovery, which is what makes one stage unable to give both. JavaScript performs the computation; a Python reference confirms it.</p>
+    <div class="hero">
+      <div class="kicker">Separations &amp; Processes · AI Project</div>
+      <h1>Membrane gas separation: purity vs recovery</h1>
+      <p>Power plants, gas wells, and farms all make a gas mix — and a thin plastic film can pull the CO₂ out without boiling anything. A single-stage CO₂ membrane, modelled with the complete-mixing model and solved by bisection on the Weller–Steiner equation. The tradeoff is mapped live: how strongly purity falls as you push for more recovery, which is what makes one stage unable to give both. JavaScript performs the computation; a Python reference confirms it.</p>
+    </div>
 
     <div class="cards">
       <div class="card-result"><b id="cardPurity">24.3%</b><span>Permeate purity y<br>CO₂ in permeate</span></div>
@@ -64,9 +71,36 @@
     </nav>
 
     <section class="tabpanel active" id="panel-app">
+      <h2>Where this actually happens — pick a real job</h2>
+      <p>Same membrane idea, three different real feeds. Click one — it sets all the sliders to realistic values for that job, and the story below explains why it is hard or easy.</p>
+      <div class="presets">
+        <button class="preset active" data-preset="flue"><b>Flue gas — carbon capture</b><span>Power plant · 15% CO₂ in N₂ · 5 bar<br>Goal: catch CO₂ before the stack. Dilute feed = hard job.</span></button>
+        <button class="preset" data-preset="gas"><b>Natural gas — sweetening</b><span>Gas well · 8% CO₂ in CH₄ · 15 bar<br>Goal: clean gas for the pipeline. High pressure helps a lot.</span></button>
+        <button class="preset" data-preset="biogas"><b>Biogas — upgrading</b><span>Farm digester · 40% CO₂ in CH₄ · 8 bar<br>Goal: pipeline-grade methane. Rich feed = much easier.</span></button>
+      </div>
+      <p class="note-blue" id="presetStory">Power-plant flue gas: only 15% CO₂, the rest mostly N₂. The job is to catch CO₂ before it goes up the stack, without boiling a solvent. Low feed CO₂ is why one stage only gets to 24.3% purity here.</p>
+
+      <h2>What goes where — live flow</h2>
+      <div class="flow">
+        <div class="flowbox"><b>Feed</b><span id="flowFeed">10 mol/s · 15.0% CO₂</span></div>
+        <div class="flowarrow">→</div>
+        <div class="flowbox"><b>Membrane</b><span id="flowArea">857 m²</span></div>
+        <div class="flowarrow">→</div>
+        <div class="flowbox"><b>Permeate (through)</b><span id="flowPerm">5.0 mol/s · 24.3% CO₂</span></div>
+        <div class="flowarrow">→</div>
+        <div class="flowbox"><b>Retentate (left behind)</b><span id="flowRet">5.0 mol/s · 5.7% CO₂</span></div>
+      </div>
+      <div class="btnrow">
+        <button class="ghost" id="btnHighPurity">Show me high purity (θ = 5%)</button>
+        <button class="ghost" id="btnHighRecovery">Show me high recovery (θ = 90%)</button>
+      </div>
+
       <h2>Purity vs recovery tradeoff — live</h2>
       <p>Each point on the blue curve is a different stage cut, at your current selectivity, feed composition and pressures. The red dot is where you are now. You cannot get both high purity and high recovery in one stage — that is the point.</p>
       <canvas id="chart" width="920" height="340"></canvas>
+      <h2>Purity and recovery vs stage cut — the same tradeoff, another way</h2>
+      <p>Blue is recovery, red is purity. As you push more gas through, recovery climbs and purity falls. They cross — that crossing is the compromise you have to pick.</p>
+      <canvas id="chart2" width="920" height="340"></canvas>
       <div class="outputs">
         <div class="out"><b id="outPurity"></b><span>Permeate purity (CO₂ in permeate)</span></div>
         <div class="out"><b id="outRecovery"></b><span>CO₂ recovery</span></div>
